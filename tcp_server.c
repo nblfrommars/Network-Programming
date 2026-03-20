@@ -9,7 +9,7 @@
 
 int main(int argc, char* argv[]) {
     if (argc != 4) {
-        printf("Sử dụng: %s <Cổng> <File câu chào> <File lưu nội dung>\n", argv[0]);
+        printf("Use: %s <Port> <Greeting File> <Hello.txt>\n", argv[0]);
         exit(EXIT_FAILURE);
     }
 
@@ -44,7 +44,7 @@ int main(int argc, char* argv[]) {
         exit(EXIT_FAILURE);
     }
 
-    printf("Server đang đợi kết nối ở cổng %d...\n", port);
+    printf("Server waiting on port %d...\n", port);
 
     struct sockaddr_in client_addr;
     socklen_t client_addr_len = sizeof(client_addr);
@@ -58,7 +58,7 @@ int main(int argc, char* argv[]) {
 
     FILE *f_greet = fopen(greeting_file, "r");
     if (f_greet == NULL) {
-        perror("Lỗi mở file câu chào");
+        perror("Error occurred while sending greeting file!");
     } else {
         char greet_buf[256];
         while (fgets(greet_buf, sizeof(greet_buf), f_greet) != NULL) {
@@ -69,11 +69,11 @@ int main(int argc, char* argv[]) {
 
     FILE *f_log = fopen(log_file, "a");
     if (f_log == NULL) {
-        perror("Lỗi mở file log");
+        perror("Error opening log file");
     } else {
         char buf[256];
         int len;
-        printf("Đang nhận dữ liệu và ghi vào file %s...\n", log_file);
+        printf("Receiving and write data on file %s...\n", log_file);
         
         while ((len = recv(client, buf, sizeof(buf) - 1, 0)) > 0) {
             buf[len] = '\0';

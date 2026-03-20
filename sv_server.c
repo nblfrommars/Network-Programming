@@ -7,7 +7,6 @@
 #include <unistd.h>
 #include <time.h>
 
-// Định nghĩa struct khớp với sv_client
 struct SinhVien {
     char mssv[15];
     char hoTen[50];
@@ -17,7 +16,7 @@ struct SinhVien {
 
 int main(int argc, char* argv[]) {
     if (argc != 3) {
-        printf("Sử dụng: %s <Cổng> <File log>\n", argv[0]);
+        printf("Use: %s <Port> <File log>\n", argv[0]);
         exit(EXIT_FAILURE);
     }
 
@@ -48,7 +47,7 @@ int main(int argc, char* argv[]) {
         exit(EXIT_FAILURE);
     }
 
-    printf("Server đang đợi kết nối ở cổng %d...\n", port);
+    printf("Server waiting on port %d...\n", port);
 
     struct sockaddr_in client_addr;
     socklen_t client_len = sizeof(client_addr);
@@ -59,32 +58,36 @@ int main(int argc, char* argv[]) {
     }
 
     char *client_ip = inet_ntoa(client_addr.sin_addr);
-    printf("Client kết nối từ IP: %s\n", client_ip);
+    printf("Client connecting from IP: %s\n", client_ip);
 
     FILE *f_log = fopen(log_filename, "a");
     if (f_log == NULL) {
-        perror("Không thể mở file log");
+        perror("Cannot open file log");
         exit(EXIT_FAILURE);
     }
 
     struct SinhVien sv;
+     char buffer[512]; 
     while (1) {
-        int ret = recv(client, &sv, sizeof(sv), 0);
+        memset(buffer, 0, sizeof(buffer));
+        int ret = recv(client, buffer, sizeof(buffer) - 1, 0);
+        
         if (ret <= 0) {
-            printf("Client đã ngắt kết nối.\n");
+            printf("Client has disconnected!.\n");
             break;
         }
+
+        buffer[ret] = '\0';
+        
+        buffer[strcspn(buffer, "\n\r")] = 0;
 
         time_t t = time(NULL);
         struct tm *tm_info = localtime(&t);
         char time_str[26];
         strftime(time_str, sizeof(time_str), "%Y-%m-%d %H:%M:%S", tm_info);
 
-        printf("%s %s %s %s %s %.2f\n", 
-               client_ip, time_str, sv.mssv, sv.hoTen, sv.ngaySinh, sv.diemTB);
-
-        fprintf(f_log, "%s %s %s %s %s %.2f\n", 
-                client_ip, time_str, sv.mssv, sv.hoTen, sv.ngaySinh, sv.diemTB);
+        printf("%s %s %s\n", client_ip, time_str, buffer);
+        fprintf(f_log, "%s %s %s\n", client_ip, time_str, buffer);
         
         fflush(f_log); 
     }

@@ -6,7 +6,6 @@
 #include <arpa/inet.h>
 #include <unistd.h>
 
-// Định nghĩa cấu trúc sinh viên theo yêu cầu
 struct SinhVien {
     char mssv[15];
     char hoTen[50];
@@ -16,7 +15,7 @@ struct SinhVien {
 
 int main(int argc, char* argv[]) {
     if (argc != 3) {
-        printf("Sử dụng: %s <Địa chỉ IP> <Cổng>\n", argv[0]);
+        printf("Use: %s <IP Address> <Port>\n", argv[0]);
         exit(EXIT_FAILURE);
     }
     int client = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
@@ -41,8 +40,10 @@ int main(int argc, char* argv[]) {
     struct SinhVien sv;
     char buffer[256];
 
+    char sendBuffer[256];
+
     while (1) {
-        printf("Nhap thong tin sinh vien or exit de thoat\n");
+        printf("Nhap thong tin sinh vien hoac exit\n");
         
         printf("MSSV: ");
         scanf("%s", sv.mssv);
@@ -52,7 +53,7 @@ int main(int argc, char* argv[]) {
 
         printf("Ho ten: ");
         fgets(sv.hoTen, sizeof(sv.hoTen), stdin);
-        sv.hoTen[strcspn(sv.hoTen, "\n")] = 0; 
+        sv.hoTen[strcspn(sv.hoTen, "\n")] = 0;
 
         printf("Ngay sinh (dd/mm/yyyy): ");
         scanf("%s", sv.ngaySinh);
@@ -60,16 +61,21 @@ int main(int argc, char* argv[]) {
         printf("GPA: ");
         scanf("%f", &sv.diemTB);
 
-        int sent = send(client, &sv, sizeof(sv), 0);
+        memset(sendBuffer, 0, sizeof(sendBuffer));
+        sprintf(sendBuffer, "%s %s %s %.2f", 
+                sv.mssv, sv.hoTen, sv.ngaySinh, sv.diemTB);
+
+        int sent = send(client, sendBuffer, strlen(sendBuffer), 0);
+        
         if (sent < 0) {
             perror("send() failed");
             break;
         }
-        printf("=>Sent Students Infor (%d bytes).\n\n", sent);
+        printf("=> Data sent: [%s] (%d bytes)\n\n", sendBuffer, sent);
     }
 
     close(client);
-    printf("Closed Connection.\n");
+    printf("Ended connection.\n");
 
     return 0;
 }
