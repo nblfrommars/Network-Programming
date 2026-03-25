@@ -29,7 +29,7 @@ int main(int argc, char * argv[]){
         fgets(buf, sizeof(buf), stdin);
         buf[strcspn(buf,"\n")]= 0;
         if(strncmp(buf, "exit",4) == 0){
-            printf("Ket thuc chuong trinh!\n");
+            printf("Ended!\n");
             break;
         }
         send(client, buf, strlen(buf), 0);
